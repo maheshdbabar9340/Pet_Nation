@@ -1,0 +1,165 @@
+<html>
+<head>
+    <title> Pending Requests </title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta name= "viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="icon" href="imgs/dog.jpg" style="border-radius: 50%;" type="image/jpg">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/amazon-cognito-identity.min.js"></script>
+    <style>
+    
+        table {
+            margin: 0 auto;
+            font-size: large;
+            border: 1px solid black;
+        }
+  
+        h1 {
+            color: white;
+            text-align: center;
+            font-size: xx-large;
+            font-family: 'Gill Sans', 
+                'Gill Sans MT', ' Calibri', 
+                'Trebuchet MS', 'sans-serif';
+        }
+        
+        th,
+        td {
+            background-color: #E4F5D4;
+            font-weight: bold;
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+  
+        td {
+            font-weight: lighter;
+        }
+    </style>
+</head>
+
+<body>
+<section style="padding-top: 100px;" class="header container-fluid">
+
+    <section>
+        <h1>Pending Requests</h1>
+        <br>
+        
+        <table class="table table-striped container">
+            <tr  class="bg-info">
+                <th>Sr. No.</th>
+                <th>PetName</th>
+                <th>PetBreed</th>
+                <th>City</th>
+                <th>Days</th>
+                <th>Delete Request</th>
+                <th>Resolve Request</th>
+            </tr>
+
+            <tbody id="myTable">
+                
+            </tbody>
+
+            <script>
+
+                var emailUser;
+
+                function fun1(x){
+                    const request=new XMLHttpRequest();
+                    request.open("GET","https://bof3vuc5x4.execute-api.us-east-1.amazonaws.com/v1/request_update?email="+emailUser+"&petname="+x+"&caretaker=delete@gmail.com");
+                    request.send();
+                    request.onload= ()=>{
+                        if(request.status ==200){
+                            console.log(request.response);
+                            location.reload(true);
+                        }
+                        else{
+                            console.log('error');
+                        }
+                    }
+                }
+
+                function fun2(x){
+                    var care = prompt("Enter email id of caretaker");
+                    const request=new XMLHttpRequest();
+                    request.open("GET","https://bof3vuc5x4.execute-api.us-east-1.amazonaws.com/v1/request_update?email="+emailUser+"&petname="+x+"&caretaker="+care);
+                    request.send();
+                    request.onload= ()=>{
+                        if(request.status ==200){
+                            console.log(request.response);
+                            location.reload(true);
+                        }
+                        else{
+                            console.log('error');
+                        }
+                    }
+                }
+
+                $(document).ready(function () {
+
+                    var data = { 
+                        UserPoolId : _config.cognito.userPoolId,
+                        ClientId : _config.cognito.clientId
+                    };
+
+                    var userPool = new AmazonCognitoIdentity.CognitoUserPool(data);
+                    var cognitoUser = userPool.getCurrentUser();
+
+                    cognitoUser.getSession(function(err, session) {
+                        if (err) {
+                            alert(err);
+                            return;
+                        }
+                        console.log('session validity: ' + session.isValid());
+                        //Set the profile info
+                        cognitoUser.getUserAttributes(function(err, result) {
+                            if (err) {
+                                console.log(err);
+                                return;
+                            }
+                            emailUser = result[2]["Value"];
+                            const request = new XMLHttpRequest();
+                            request.open("GET","https://bof3vuc5x4.execute-api.us-east-1.amazonaws.com/v1/request_pending?email="+emailUser);
+                            request.send();
+                            request.onload= ()=>{
+                                if(request.status ==200){
+                                    const temp = JSON.parse(request.response);
+                                    console.log(temp);
+
+                                    var count =  Object.keys(temp).length;
+                                    buildTable();
+                                    function buildTable(){
+                                        var table = document.getElementById('myTable')
+
+                                        for (var i = 0; i < count; i++){
+                                            var row = `<tr>
+                                                            <td>${i+1}</td>
+                                                            <td>${temp[i].petname}</td>
+                                                            <td>${temp[i].petbreed}</td>
+                                                            <td>${temp[i].city}</td>
+                                                            <td>${temp[i].days}</td>
+                                                            <td> <button onclick="fun1('${temp[i].petname}')"> Delete </button> </td>
+                                                            <td> <button onclick="fun2('${temp[i].petname}')"> Mark as Resolve </button> </td>
+                                                    </tr>`
+                                            console.log(row);
+                                            table.innerHTML += row
+                                        }
+                                    }
+                                }
+                                else{
+                                    console.log('error');
+                                }
+                            };
+                        });
+                    });
+                });
+            </script>
+        </table>
+    </section>
+</section>
+
+</body>
+</html>

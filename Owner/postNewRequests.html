@@ -1,0 +1,163 @@
+<html>
+<head>
+    <title>Post New Request </title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta name= "viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="icon" href="imgs/dog.jpg" style="border-radius: 50%;" type="image/jpg">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/amazon-cognito-identity.min.js"></script>
+
+    <script>
+      function fun(){
+
+        var emailUser = "Raja";
+
+        var data = { 
+          UserPoolId : _config.cognito.userPoolId,
+          ClientId : _config.cognito.clientId
+        };
+
+        var userPool = new AmazonCognitoIdentity.CognitoUserPool(data);
+        var cognitoUser = userPool.getCurrentUser();
+
+        cognitoUser.getSession(function(err, session) {
+					if (err) {
+						alert(err);
+						return;
+					}
+					console.log('session validity: ' + session.isValid());
+					//Set the profile info
+					cognitoUser.getUserAttributes(function(err, result) {
+						if (err) {
+							console.log(err);
+							return;
+						}
+            emailUser = result[2]["Value"];
+            var mobileNo = document.getElementById("contactNo").value;
+            var data = {
+              "email" : emailUser,
+              "petname" : document.getElementById("firstName").value,
+              "petbreed" : document.getElementById("lastName").value,
+              "city" : document.getElementById("cityName").value,
+              "days" : document.getElementById("duration").value,
+              "caretaker" : ""
+            };
+            console.log(data);
+            let formData = JSON.stringify(data);
+            const request1 = new XMLHttpRequest();
+            request1.open("POST","https://bof3vuc5x4.execute-api.us-east-1.amazonaws.com/v1/request_put");
+            request1.setRequestHeader('Content-Type','applcation/json');
+            request1.onreadystatechange= ()=>{
+              console.log(request1.response);
+            };
+            request1.send(formData);
+
+            const request2 = new XMLHttpRequest();
+            request2.open("GET","https://bof3vuc5x4.execute-api.us-east-1.amazonaws.com/v1/sendemail?email="+emailUser+"&petname="+data["petname"]+"&petbreed="+data["petbreed"]+"&mobile="+mobileNo+"&days="+data["days"]+"&city="+data["city"]);
+            request2.send();
+            request2.onload = ()=>{
+              if(request2.status == 200){
+                console.log(request2.response);
+              }
+              else{
+                console.log('error');
+              }
+            };
+            alert("Your request has been posted");
+            window.location.replace("profile.html");
+          });
+        });
+      }
+    </script>
+
+</head>
+
+<body>
+    <section class="vh-100">
+        <div class="container py-5 h-100">
+          <div class="row justify-content-center align-items-center h-100">
+            <div class="col-12 col-lg-9 col-xl-7">
+              <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
+                <div class="card-body p-4 p-md-5">
+                  <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Post New Request </h3>
+                  <form>
+      
+                    <div class="row">
+                      <div class="col-md-6 mb-4">
+                        <div class="form-outline">
+                          <input type="text" id="firstName" class="form-control form-control-lg" />
+                          <label class="form-label" for="firstName">Pet Name</label>
+                        </div>
+                      </div>
+                      <div class="col-md-6 mb-4">
+                        <div class="form-outline">
+                          <input type="text" id="lastName" class="form-control form-control-lg" />
+                          <label class="form-label" for="lastName">Breed </label>
+                        </div>
+                      </div>
+                    </div>
+      
+                    <div class="row">
+                      <div class="col-md-6 mb-4 d-flex align-items-center">
+                        <div class="form-outline datepicker w-100">
+                          <input
+                            type="text"
+                            class="form-control form-control-lg"
+                            id="birthdayDate"
+                          />
+                          <label for="birthdayDate" class="form-label">Age</label>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6 mb-4">
+                        <div class="form-outline">
+                          <input type="text" id="complexion" class="form-control form-control-lg" />
+                          <label class="form-label" for="lastName">Body Color </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4 d-flex align-items-center">
+                          <div class="form-outline datepicker w-100">
+                            <input
+                              type="text"
+                              class="form-control form-control-lg"
+                              id="cityName"
+                            />
+                            <label for="birthdayDate" class="form-label"> City </label>
+                          </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                          <div class="form-outline">
+                            <input type="text" id="duration" class="form-control form-control-lg" />
+                            <label class="form-label" for="lastName"> No. Of Days </label>
+                          </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6 mb-4">
+                        <div class="form-outline">
+                          <input type="text" id="contactNo" class="form-control form-control-lg" />
+                          <label class="form-label" for="firstName">Mobile No.</label>
+                        </div>
+                      </div>
+                    </div>
+                  
+                    <div class="mt-4 pt-2">
+                      <input class="btn btn-primary btn-lg" value="Submit" onclick="fun()"/>
+                    </div>
+      
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+</body>
+</html>

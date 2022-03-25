@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- Javascript SDKs-->
+	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script> 
+	<script src="js/amazon-cognito-auth.min.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script> 
+	<script src="js/amazon-cognito-identity.min.js"></script>   
+	<script src="js/config.js"></script>
+
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta name= "viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+  </head>
+  <body>
+
+    <section class="vh-100" style="background-color: #508bfc;">
+        <div class="container py-5 h-100">
+          <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+              <div class="card shadow-2-strong" style="border-radius: 1rem;">
+                <div class="card-body p-5 text-center">
+
+                  <a href="../index.html"><button class="btn btn-outline-primary btn-lg btn-block" type="submit">HOME</button></a>
+                  <br>
+      
+                  <h3 class="mb-5">Login</h3>
+      
+                  <div class="form-outline mb-4">
+                    <input type="email" id="inputUsername" class="form-control form-control-lg" placeholder="Email address" name="username" required autofocus />
+                  </div>
+      
+                  <div class="form-outline mb-4">
+                    <input type="password" id="inputPassword" class="form-control form-control-lg" placeholder="Password" name="password" required/>
+                  </div>
+      
+                  <button class="btn btn-primary btn-lg btn-block" type="submit" onclick="signInButton()">Login</button>
+
+                  <br>
+                  <a href="register.html"> Create a new account ? Click here to Register </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    <!-- <form>
+      <h1>Login to account</h1>
+
+      <input type="text" id="inputUsername"  placeholder="Email address" name="username" required autofocus>
+      <input type="password" id="inputPassword"  placeholder="Password" name="password" required>    
+      <button type="button" onclick="signInButton()">Sign in</button>
+      <button type="button" onclick="forgotButton()"> Forgot Password</button>
+
+    </form> -->
+
+<script>
+
+  function signInButton() {
+    var authenticationData = {
+      Username : document.getElementById("inputUsername").value,
+      Password : document.getElementById("inputPassword").value,
+    };
+    var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);  
+    var poolData = {
+      UserPoolId : _config.cognito.userPoolId, // Your user pool id here
+      ClientId : _config.cognito.clientId, // Your client id here
+    };
+    var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);    
+    var userData = {
+      Username : document.getElementById("inputUsername").value,
+      Pool : userPool,
+    };
+    var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);  
+    cognitoUser.authenticateUser(authenticationDetails, {
+      onSuccess: function (result) {
+      var accessToken = result.getAccessToken().getJwtToken();
+      console.log(accessToken);	
+      window.location.replace("profile.html");
+      },
+      onFailure: function(err) {
+        alert(err.message || JSON.stringify(err));
+      },
+    });
+  }
+
+  function forgotButton(){
+    var poolData = {
+        UserPoolId : _config.cognito.userPoolId, // Your user pool id here
+        ClientId : _config.cognito.clientId, // Your client id here
+    };
+	
+    var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+	
+    var userData = {
+        Username : document.getElementById("inputUsername").value,
+        Pool : userPool,
+    };
+	
+    var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+		
+    cognitoUser.forgotPassword({
+        onSuccess: function (result) {
+            console.log('call result: ' + result);
+        },
+        onFailure: function(err) {
+            alert(err);
+			console.log(err);
+        },
+        inputVerificationCode() {
+            var verificationCode = prompt('Please input verification code ' ,'');
+            var newPassword = prompt('Enter new password ' ,'');
+            cognitoUser.confirmPassword(verificationCode, newPassword, this);
+        }
+    });
+  }
+
+</script>
+</body>
+</html>
